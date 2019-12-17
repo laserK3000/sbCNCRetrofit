@@ -1,0 +1,615 @@
+loadrt trivkins
+loadrt tp
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins num_dio=48
+loadrt hostmot2
+loadusr io
+loadrt hm2_pci config=" num_encoders=6 num_pwmgens=0 num_3pwmgens=0 num_stepgens=0 sserial_port_0=000xxxxx " 
+setp     hm2_5i25.0.watchdog.timeout_ns 10000000
+loadrt pid names=pid.x,pid.y,pid.z,pid.s
+loadrt orient names=orient 
+loadrt pid names=orient-pid
+loadrt mux2 names=orient-mux,z-limit-mux
+loadrt or2 names=orient-mux-or
+newinst orn spindle-enable-or pincount=3
+loadrt near names=near-spindle
+loadrt debounce names=debounce-spindle count=1
+loadrt edge count=1
+loadrt and2 names=spindle-is-oriented-and,probe-and
+loadrt bitwise names=probe-comp
+loadrt conv_s32_u32 names=conv1
+
+addf hm2_5i25.0.read		servo-thread
+addf motion-command-handler 	servo-thread
+addf motion-controller 		servo-thread
+addf z-limit-mux		servo-thread
+addf pid.x.do-pid-calcs         servo-thread
+addf pid.y.do-pid-calcs         servo-thread
+addf pid.z.do-pid-calcs         servo-thread
+addf pid.s.do-pid-calcs         servo-thread
+addf orient-pid.do-pid-calcs    servo-thread
+addf hm2_5i25.0.write         	servo-thread
+addf hm2_5i25.0.pet_watchdog  	servo-thread
+addf orient			servo-thread
+addf orient-mux			servo-thread
+addf orient-mux-or		servo-thread
+addf spindle-enable-or		servo-thread
+addf near-spindle		servo-thread
+addf debounce-spindle		servo-thread
+addf edge.0			servo-thread
+addf spindle-is-oriented-and	servo-thread
+addf probe-and			servo-thread
+addf conv1			servo-thread
+
+net X3_01  <= hm2_5i25.0.7i77.0.0.input-01
+net X3_02  <= hm2_5i25.0.7i77.0.0.input-02
+net X3_03  <= hm2_5i25.0.7i77.0.0.input-03
+net X3_04  <= hm2_5i25.0.7i77.0.0.input-04
+net X3_05  <= hm2_5i25.0.7i77.0.0.input-05
+net X3_06  <= hm2_5i25.0.7i77.0.0.input-06
+net X3_07  <= hm2_5i25.0.7i77.0.0.input-07
+net X3_08  <= hm2_5i25.0.7i77.0.0.input-08
+net X3_09  <= hm2_5i25.0.7i77.0.0.input-09
+net X3_10  <= hm2_5i25.0.7i77.0.0.input-10
+net X3_11  <= hm2_5i25.0.7i77.0.0.input-11
+net X3_12  <= hm2_5i25.0.7i77.0.0.input-12
+net X3_13  <= hm2_5i25.0.7i77.0.0.input-13
+net X3_14  <= hm2_5i25.0.7i77.0.0.input-14
+net X3_15  <= hm2_5i25.0.7i77.0.0.input-15
+net X3_16  <= hm2_5i25.0.7i77.0.0.input-16
+net X3_17  <= hm2_5i25.0.7i77.0.0.input-17
+net X3_18  <= hm2_5i25.0.7i77.0.0.input-18
+net X3_19  <= hm2_5i25.0.7i77.0.0.input-19
+net X3_20  <= hm2_5i25.0.7i77.0.0.input-20
+net X3_21  <= hm2_5i25.0.7i77.0.0.input-21
+net X3_22  <= hm2_5i25.0.7i77.0.0.input-22
+net X3_23  <= hm2_5i25.0.7i77.0.0.input-23
+net X3_24  <= hm2_5i25.0.7i77.0.0.input-24
+net X3_25  <= hm2_5i25.0.7i77.0.0.input-25
+net X3_26  <= hm2_5i25.0.7i77.0.0.input-26
+net X3_27  <= hm2_5i25.0.7i77.0.0.input-27
+net X3_28  <= hm2_5i25.0.7i77.0.0.input-28
+net X3_29  <= hm2_5i25.0.7i77.0.0.input-29
+net X3_30  <= hm2_5i25.0.7i77.0.0.input-30
+net X3_31  <= hm2_5i25.0.7i77.0.0.input-31
+net X3_32  <= hm2_5i25.0.7i77.0.0.input-32
+net X3_33  <= 
+net X3_34  <= 
+net X3_35  <= 
+net X3_36  <= 
+net X3_37  <= 
+
+net ready_x <= X3_01 # BTB X
+net ready_z <= X3_02 # BTB Z
+net ready_s <= X3_03 # BTB S
+net  <= X3_04 #
+net  <= X3_05 #
+net ready_powersupply <= X3_06 # BTB VM60
+net  <= X3_07 #
+net  <= X3_08 #
+net  <= X3_09 #
+net  <= X3_10 #
+net pressure <= X3_11 # Druckwaechter
+net eoff_turret <= X3_12 # Notaus Revolver
+net eoff <= X3_13 # Notaus
+net ready2 <= X3_14 # READY 2
+net guard_f11 <= X3_15 # Sicherungsueberwachung
+net guard_f30 <= X3_16 # Sicherungsueberwachung
+net guard_f15 <= X3_17 # Sicherungsueberwachung
+net guard_f17 <= X3_18 # Sicherungsueberwachung
+net guard_f18 <= X3_19 # Sicherungsueberwachung
+net guard_f25 <= X3_20 # Sicherungsueberwachung
+net  <= X3_21 # Option Sicherungsueberwachung
+net  <= X3_22 # Option Abgreifeinrichtung
+net  <= X3_23 #
+net  <= X3_24 #
+net  <= X3_25 #
+net  <= X3_26 #
+net guard_k1 <= X3_27 # RM K1
+net guard_k2 <= X3_28 # RM K2
+net release_turret <= X3_29 # Freigabe Revolver
+net  <= X3_30 #
+net  <= X3_31 #
+net  <= X3_32 #
+net  <= X3_33 #
+net  <= X3_34 #
+net  <= X3_35 #
+net  <= X3_36 #
+net  <= X3_37 #
+
+net X4_01  <= hm2_5i25.0.7i77.0.0.output-01
+net X4_02  <= hm2_5i25.0.7i77.0.0.output-02
+net X4_03  <= hm2_5i25.0.7i77.0.0.output-03
+net X4_04  <= hm2_5i25.0.7i77.0.0.output-04
+net X4_05  <= hm2_5i25.0.7i77.0.0.output-05
+net X4_06  <= hm2_5i25.0.7i77.0.0.output-06
+net X4_07  <= hm2_5i25.0.7i77.0.0.output-07
+net X4_08  <= hm2_5i25.0.7i77.0.0.output-08
+net X4_09  <= hm2_5i25.0.7i77.0.0.output-09
+net X4_10  <= hm2_5i25.0.7i77.0.0.output-10
+net X4_11  <= hm2_5i25.0.7i77.0.0.output-11
+net X4_12  <= hm2_5i25.0.7i77.0.0.output-12
+net X4_13  <= hm2_5i25.0.7i77.0.0.output-13
+net X4_14  <= hm2_5i25.0.7i77.0.0.output-14
+net X4_15  <= hm2_5i25.0.7i77.0.0.output-15
+net X4_16  <= hm2_5i25.0.7i77.0.0.output-16
+net X4_17  <= hm2_5i25.0.7i70.0.0.output-17
+net X4_18  <= hm2_5i25.0.7i77.0.0.output-18
+net X4_19  <= hm2_5i25.0.7i77.0.0.output-19
+net X4_20  <= hm2_5i25.0.7i77.0.0.output-20
+net X4_21  <= hm2_5i25.0.7i77.0.0.output-21
+net X4_22  <= hm2_5i25.0.7i77.0.0.output-22
+net X4_23  <= hm2_5i25.0.7i77.0.0.output-23
+net X4_24  <= hm2_5i25.0.7i77.0.0.output-24
+net X4_25  <= hm2_5i25.0.7i77.0.0.output-25
+net X4_26  <= hm2_5i25.0.7i77.0.0.output-26
+net X4_27  <= hm2_5i25.0.7i77.0.0.output-27
+net X4_28  <= hm2_5i25.0.7i77.0.0.output-28
+net X4_29  <= hm2_5i25.0.7i77.0.0.output-29
+net X4_30  <= hm2_5i25.0.7i77.0.0.output-30
+net X4_31  <= hm2_5i25.0.7i77.0.0.output-31
+net X4_32  <= hm2_5i25.0.7i77.0.0.output-32
+net X4_33  <= hm2_5i25.0.7i77.0.0.output-33
+net X4_34  <= hm2_5i25.0.7i77.0.0.output-34
+net X4_35  <= hm2_5i25.0.7i77.0.0.output-35
+net X4_36  <= hm2_5i25.0.7i77.0.0.output-36
+net X4_37  <= hm2_5i25.0.7i77.0.0.output-37
+
+net  <= X4_01 # 
+net  <= X4_02 # 
+net  <= X4_03 # Kuehlmittel 1
+net  <= X4_04 # Kuehlmittel 2
+net contactor_1 <= X4_05 # Elektro 1
+net contactor_2 <= X4_06 # Elektro 2
+net oil <= X4_07 # Oelpumpe
+net release <= X4_08 # Freifahren
+net  <= X4_09 # 
+net  <= X4_10 # 
+net clamp_outward <= X4_11 # Spannen vor
+net clamp_inward <= X4_12 # Spannen zurueck
+net enable_x <= X4_13 # Freigabe X
+net enable_z <= X4_14 # Freigabe Z
+net enable_s <= X4_15 # Freigabe S
+net enable_drives <= X4_16 # Antriebe Ein
+net doorlock <= X4_17 # Option Tuere verriegeln
+net  <= X4_18 # Option Indexierung
+net  <= X4_19 # Option Stangenvorschub
+net air_valve_1 <= X4_20 # M77/87
+net air_valve_2 <= X4_21 # M78/88
+net air_valve_3 <= X4_22 # M79/89
+net air_valve_4 <= X4_23 # M80/90
+net tailstock_in <= X4_24 # M15 Reitstock
+net tailstock_out <= X4_25 # M16 Reitstock
+net  <= X4_26 # 
+net  <= X4_27 # 
+net  <= X4_28 # 
+net  <= X4_29 # 
+net  <= X4_30 # 
+net  <= X4_31 # 
+net  <= X4_32 # 
+net  <= X4_33 # 
+net  <= X4_34 # 
+net  <= X4_35 # 
+net  <= X4_36 # 
+net  <= X4_37 # 
+
+# motion controller IO:
+net tool-change-confirmed motion.digital-out-00 => iocontrol.0.tool-changed
+
+# switch atc ranges from toolchange subroutine
+net z-limit-select motion.digital-out-01 => z-limit-mux.sel
+
+# spindle index pulse wired to motion controller
+net spindle-index-enable => motion.digital-in-01
+
+# atc-home
+net atc-home <= motion.digital-in-16 hm2_5i25.0.7i77.0.0.input-11
+
+# atc-range
+net atc-range <= motion.digital-in-17 hm2_5i25.0.7i77.0.0.input-12
+
+# atc-run
+net atc-run <= motion.digital-out-03 hm2_5i25.0.7i77.0.0.output-02
+
+# atc-direction
+net atc-direction <= motion.digital-out-04 hm2_5i25.0.7i77.0.0.output-03
+
+# atc-dec
+net atc-dec <= motion.digital-in-10 hm2_5i25.0.7i77.0.0.input-16
+
+# encoder atc
+net atc-enc-1 motion.digital-in-11 <= hm2_5i25.0.7i77.0.0.input-17
+net atc-enc-2 motion.digital-in-12 <= hm2_5i25.0.7i77.0.0.input-18
+net atc-enc-3 motion.digital-in-13 <= hm2_5i25.0.7i77.0.0.input-19
+net atc-enc-4 motion.digital-in-14 <= hm2_5i25.0.7i77.0.0.input-20
+
+# optical probe interface wired to motion controller for atc probe activation
+net probe-touch-reset 	motion.digital-out-02 <= hm2_5i25.0.7i77.0.0.output-01
+net probe-touch-in 	motion.digital-in-18
+net probe-touch-error 	motion.digital-in-19
+
+
+# --- MACHINE-IS-ENABLED ---
+net machine-is-enabled hm2_5i25.0.7i77.0.0.output-05
+
+# Z brake
+net machine-is-enabled hm2_5i25.0.7i77.0.0.output-04
+
+# external input signals
+
+
+# --- MAX-X ---
+net max-x     <=  hm2_5i25.0.7i77.0.0.input-00-not
+
+# --- MIN-X ---
+net min-x     <=  hm2_5i25.0.7i77.0.0.input-01-not
+
+# --- MAX-Y ---
+net max-y     <=  hm2_5i25.0.7i77.0.0.input-02-not
+
+# --- MIN-Y ---
+net min-y     <=  hm2_5i25.0.7i77.0.0.input-04-not
+
+# --- MAX-Z ---
+net max-z     <=  hm2_5i25.0.7i77.0.0.input-03-not
+
+# --- MIN-Z ---
+net min-z     <=  hm2_5i25.0.7i77.0.0.input-05-not
+
+# --- HOME-X ---
+net home-x     <=  hm2_5i25.0.7i77.0.0.input-08
+
+# --- HOME-Y ---
+net home-y     <=  hm2_5i25.0.7i77.0.0.input-09
+
+# --- HOME-Z ---
+# use atr-range for z home, see further down
+
+#*******************
+#  RENISHAW OMP40-2
+#*******************
+
+# IR probe in (Renishaw OMP40-2 with MI4)
+net probe-touch-in <= hm2_5i25.0.7i77.0.0.input-31
+net probe-touch-error <= hm2_5i25.0.7i77.0.0.input-29-not
+
+# if motion is probing (value 5) and error from the
+# MI4, then inhibit motion to prevent crash on lost
+# IR connection
+net probe-touch-error => probe-and.in0
+net motion-current-motion-type motion.current-motion => conv1.in
+net motion-current-motion-type_u32 conv1.out => probe-comp.in0
+setp probe-comp.in1 5
+net probe-comp.out => probe-and.in1
+# wire also to probe routine input
+# net probe-touch-error-and.out => motion.feed-inhibit
+# net probe-touch-error =>  probe.user.error
+
+
+#*******************
+#  AXIS X
+#*******************
+
+setp   pid.x.Pgain     [AXIS_0]P
+setp   pid.x.Igain     [AXIS_0]I
+setp   pid.x.Dgain     [AXIS_0]D
+setp   pid.x.bias      [AXIS_0]BIAS
+setp   pid.x.FF0       [AXIS_0]FF0
+setp   pid.x.FF1       [AXIS_0]FF1
+setp   pid.x.FF2       [AXIS_0]FF2
+setp   pid.x.deadband  [AXIS_0]DEADBAND
+setp   pid.x.maxoutput [AXIS_0]MAX_OUTPUT
+
+net x-index-enable  <=>  pid.x.index-enable
+net x-enable       => pid.x.enable
+net x-output       => pid.x.output
+net x-pos-cmd      => pid.x.command
+net x-vel-fb       => pid.x.feedback-deriv
+net x-pos-fb       => pid.x.feedback
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout0-scalemax  [AXIS_0]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout0-minlim    [AXIS_0]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout0-maxlim    [AXIS_0]OUTPUT_MAX_LIMIT
+
+net x-output                             => hm2_5i25.0.7i77.0.1.analogout0
+net x-pos-cmd    axis.0.motor-pos-cmd
+net x-enable     axis.0.amp-enable-out
+# enable _all_ sserial pwmgens
+net x-enable   hm2_5i25.0.7i77.0.1.analogena
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.00.counter-mode 0
+setp    hm2_5i25.0.encoder.00.filter 1
+setp    hm2_5i25.0.encoder.00.index-invert 0
+setp    hm2_5i25.0.encoder.00.index-mask 0
+setp    hm2_5i25.0.encoder.00.index-mask-invert 0
+setp    hm2_5i25.0.encoder.00.scale  [AXIS_0]ENCODER_SCALE
+
+net x-pos-fb               <=  hm2_5i25.0.encoder.00.position
+net x-vel-fb               <=  hm2_5i25.0.encoder.00.velocity
+net x-pos-fb               =>  axis.0.motor-pos-fb
+net x-index-enable    axis.0.index-enable  <=>  hm2_5i25.0.encoder.00.index-enable
+net x-pos-rawcounts        <=  hm2_5i25.0.encoder.00.rawcounts
+
+# ---setup home / limit switch signals---
+
+net home-x     =>  axis.0.home-sw-in
+net min-x     =>  axis.0.neg-lim-sw-in
+net max-x     =>  axis.0.pos-lim-sw-in
+
+#*******************
+#  AXIS Y
+#*******************
+
+setp   pid.y.Pgain     [AXIS_1]P
+setp   pid.y.Igain     [AXIS_1]I
+setp   pid.y.Dgain     [AXIS_1]D
+setp   pid.y.bias      [AXIS_1]BIAS
+setp   pid.y.FF0       [AXIS_1]FF0
+setp   pid.y.FF1       [AXIS_1]FF1
+setp   pid.y.FF2       [AXIS_1]FF2
+setp   pid.y.deadband  [AXIS_1]DEADBAND
+setp   pid.y.maxoutput [AXIS_1]MAX_OUTPUT
+
+net y-index-enable  <=>  pid.y.index-enable
+net y-enable       => pid.y.enable
+net y-output       => pid.y.output
+net y-pos-cmd      => pid.y.command
+net y-vel-fb       => pid.y.feedback-deriv
+net y-pos-fb       => pid.y.feedback
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout1-scalemax  [AXIS_1]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout1-minlim    [AXIS_1]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout1-maxlim    [AXIS_1]OUTPUT_MAX_LIMIT
+
+net y-output                             => hm2_5i25.0.7i77.0.1.analogout1
+net y-pos-cmd    axis.1.motor-pos-cmd
+net y-enable     axis.1.amp-enable-out
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.01.counter-mode 0
+setp    hm2_5i25.0.encoder.01.filter 1
+setp    hm2_5i25.0.encoder.01.index-invert 0
+setp    hm2_5i25.0.encoder.01.index-mask 0
+setp    hm2_5i25.0.encoder.01.index-mask-invert 0
+setp    hm2_5i25.0.encoder.01.scale  [AXIS_1]ENCODER_SCALE
+
+net y-pos-fb               <=  hm2_5i25.0.encoder.01.position
+net y-vel-fb               <=  hm2_5i25.0.encoder.01.velocity
+net y-pos-fb               =>  axis.1.motor-pos-fb
+net y-index-enable    axis.1.index-enable  <=>  hm2_5i25.0.encoder.01.index-enable
+net y-pos-rawcounts        <=  hm2_5i25.0.encoder.01.rawcounts
+
+# ---setup home / limit switch signals---
+
+net home-y     =>  axis.1.home-sw-in
+net min-y     =>  axis.1.neg-lim-sw-in
+net max-y     =>  axis.1.pos-lim-sw-in
+
+#*******************
+#  AXIS Z
+#*******************
+
+setp   pid.z.Pgain     [AXIS_2]P
+setp   pid.z.Igain     [AXIS_2]I
+setp   pid.z.Dgain     [AXIS_2]D
+setp   pid.z.bias      [AXIS_2]BIAS
+setp   pid.z.FF0       [AXIS_2]FF0
+setp   pid.z.FF1       [AXIS_2]FF1
+setp   pid.z.FF2       [AXIS_2]FF2
+setp   pid.z.deadband  [AXIS_2]DEADBAND
+setp   pid.z.maxoutput [AXIS_2]MAX_OUTPUT
+
+net z-index-enable  <=>  pid.z.index-enable
+net z-enable       => pid.z.enable
+net z-output       => pid.z.output
+net z-pos-cmd      => pid.z.command
+net z-vel-fb       => pid.z.feedback-deriv
+net z-pos-fb       => pid.z.feedback
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout2-scalemax  [AXIS_2]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout2-minlim    [AXIS_2]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout2-maxlim    [AXIS_2]OUTPUT_MAX_LIMIT
+
+net z-output                             => hm2_5i25.0.7i77.0.1.analogout2
+net z-pos-cmd    axis.2.motor-pos-cmd
+net z-enable     axis.2.amp-enable-out
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.02.counter-mode 0
+setp    hm2_5i25.0.encoder.02.filter 1
+setp    hm2_5i25.0.encoder.02.index-invert 0
+setp    hm2_5i25.0.encoder.02.index-mask 0
+setp    hm2_5i25.0.encoder.02.index-mask-invert 0
+setp    hm2_5i25.0.encoder.02.scale  [AXIS_2]ENCODER_SCALE
+
+net z-pos-fb               <=  hm2_5i25.0.encoder.02.position
+net z-vel-fb               <=  hm2_5i25.0.encoder.02.velocity
+net z-pos-fb               =>  axis.2.motor-pos-fb
+net z-index-enable    axis.2.index-enable  <=>  hm2_5i25.0.encoder.02.index-enable
+net z-pos-rawcounts        <=  hm2_5i25.0.encoder.02.rawcounts
+
+# ---setup home / limit switch signals---
+
+net atc-range     =>  axis.2.home-sw-in
+net min-z     =>  axis.2.neg-lim-sw-in
+net max-z     =>  axis.2.pos-lim-sw-in
+
+# switch z-axis soft limits
+setp z-limit-mux.in0 [AXIS_2]MAX_LIMIT
+setp z-limit-mux.in1 [AXIS_2]MAX_LIMIT_ATC
+net z-limit-out <= z-limit-mux.out
+# ini.2.max_limit is connectedd in custom_postgui.hal
+
+
+#*******************
+#  SPINDLE S
+#*******************
+
+setp   pid.s.Pgain     [SPINDLE_9]P
+setp   pid.s.Igain     [SPINDLE_9]I
+setp   pid.s.Dgain     [SPINDLE_9]D
+setp   pid.s.bias      [SPINDLE_9]BIAS
+setp   pid.s.FF0       [SPINDLE_9]FF0
+setp   pid.s.FF1       [SPINDLE_9]FF1
+setp   pid.s.FF2       [SPINDLE_9]FF2
+setp   pid.s.deadband  [SPINDLE_9]DEADBAND
+setp   pid.s.maxoutput [SPINDLE_9]MAX_OUTPUT
+setp   pid.s.error-previous-target true
+
+setp   orient-pid.Pgain     [SPINDLE_ORIENT]P
+setp   orient-pid.Igain     [SPINDLE_ORIENT]I
+setp   orient-pid.Dgain     [SPINDLE_ORIENT]D
+setp   orient-pid.bias      [SPINDLE_ORIENT]BIAS
+setp   orient-pid.FF0       [SPINDLE_ORIENT]FF0
+setp   orient-pid.FF1       [SPINDLE_ORIENT]FF1
+setp   orient-pid.FF2       [SPINDLE_ORIENT]FF2
+setp   orient-pid.deadband  [SPINDLE_ORIENT]DEADBAND
+setp   orient-pid.maxoutput [SPINDLE_ORIENT]MAX_OUTPUT
+setp   orient-pid.error-previous-target true
+
+net spindle-index-enable   <=> pid.s.index-enable <=> orient-pid.index-enable
+net spindle-motion-enable      motion.spindle-on  =>  pid.s.enable => spindle-enable-or.in0
+net spindle-vel-cmd-rpm     => pid.s.command
+net spindle-vel-fb-rpm      => pid.s.feedback
+net spindle-vel-output pid.s.output orient-mux.in0
+net spindle-output         <=  orient-mux.out
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout5-scalemax  [SPINDLE_9]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout5-minlim    [SPINDLE_9]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout5-maxlim    [SPINDLE_9]OUTPUT_MAX_LIMIT
+
+net spindle-output      => hm2_5i25.0.7i77.0.1.analogout5
+net spindle-enable      => hm2_5i25.0.7i77.0.1.spinena
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.05.counter-mode 0
+setp    hm2_5i25.0.encoder.05.filter 1
+setp    hm2_5i25.0.encoder.05.index-invert 0
+setp    hm2_5i25.0.encoder.05.index-mask 0
+setp    hm2_5i25.0.encoder.05.index-mask-invert 0
+setp    hm2_5i25.0.encoder.05.scale  [SPINDLE_9]ENCODER_SCALE
+
+net spindle-revs             <=   hm2_5i25.0.encoder.05.position
+net spindle-vel-fb-rps       <=   hm2_5i25.0.encoder.05.velocity
+net spindle-index-enable     <=>  hm2_5i25.0.encoder.05.index-enable
+
+# ---setup spindle control signals---
+
+net spindle-vel-cmd-rps        <=  motion.spindle-speed-out-rps
+net spindle-vel-cmd-rps-abs    <=  motion.spindle-speed-out-rps-abs
+net spindle-vel-cmd-rpm        <=  motion.spindle-speed-out
+net spindle-vel-cmd-rpm-abs    <=  motion.spindle-speed-out-abs
+net spindle-enable             <=  spindle-enable-or.out
+net spindle-cw                 <=  motion.spindle-forward
+net spindle-ccw                <=  motion.spindle-reverse
+net spindle-brake              <=  motion.spindle-brake
+net spindle-revs               =>  motion.spindle-revs
+net spindle-at-speed           =>  motion.spindle-at-speed
+net spindle-vel-fb-rps         =>  motion.spindle-speed-in
+net spindle-index-enable      <=>  motion.spindle-index-enable
+net spindle-is-oriented        =>  motion.spindle-is-oriented
+net spindle-orient-fault       =>  motion.spindle-orient-fault
+net spindle-locked             <=  motion.spindle-locked
+net spindle-locked             =>  spindle-enable-or.in2 => orient-mux-or.in1
+
+net orient-angle motion.spindle-orient-angle orient.angle 
+net orient-mode motion.spindle-orient-mode orient.mode 
+net orient-enable motion.spindle-orient => orient.enable orient-mux-or.in0 spindle-enable-or.in1
+net orient-mux-sel orient-mux-or.out orient-mux.sel orient-pid.enable
+net spindle-revs => orient.position orient-pid.feedback near-spindle.in2
+net orient-command orient.command orient-pid.command near-spindle.in1
+setp near-spindle.difference 0.01
+
+#mux for switching between velocity and position pid output for the spindle
+net spindle-pos-output orient-pid.output orient-mux.in1
+net spindle-near near-spindle.out => debounce-spindle.0.in
+setp debounce-spindle.delay 20
+
+net spindle-is-oriented-and0  <= debounce-spindle.0.out
+net spindle-is-oriented-and0  => spindle-is-oriented-and.in0
+net orient-enable             => spindle-is-oriented-and.in1
+net spindle-is-oriented-edge  <= spindle-is-oriented-and.out
+net spindle-is-oriented-edge  => edge.0.in
+net spindle-is-oriented	      <= edge.0.out
+# rising edge
+setp edge.0.in-edge false
+# only rising edge
+setp edge.0.both false
+#output pulse length
+setp edge.0.out-width-ns 5000000
+
+#home the spindle during first revolution
+sets spindle-index-enable true
+
+#fault on unhomed spindle
+#net spindle-orient-fault      <= motion.spindle-index-enable
+
+
+
+# ---Setup spindle at speed signals---
+
+sets spindle-at-speed true
+#******************************
+# connect miscellaneous signals
+#******************************
+
+#  ---HALUI signals---
+
+net joint-select-a        halui.joint.0.select
+net x-is-homed            halui.joint.0.is-homed
+net jog-x-pos             halui.jog.0.plus
+net jog-x-neg             halui.jog.0.minus
+net jog-x-analog          halui.jog.0.analog
+net joint-select-b        halui.joint.1.select
+net y-is-homed            halui.joint.1.is-homed
+net jog-y-pos             halui.jog.1.plus
+net jog-y-neg             halui.jog.1.minus
+net jog-y-analog          halui.jog.1.analog
+net joint-select-c        halui.joint.2.select
+net z-is-homed            halui.joint.2.is-homed
+net jog-z-pos             halui.jog.2.plus
+net jog-z-neg             halui.jog.2.minus
+net jog-z-analog          halui.jog.2.analog
+net jog-selected-pos      halui.jog.selected.plus
+net jog-selected-neg      halui.jog.selected.minus
+net spindle-manual-cw     halui.spindle.forward
+net spindle-manual-ccw    halui.spindle.reverse
+net spindle-manual-stop   halui.spindle.stop
+net machine-is-on         halui.machine.is-on
+net jog-speed             halui.jog-speed 
+net MDI-mode              halui.mode.is-mdi
+
+#  ---coolant signals---
+
+net coolant-mist      <=  iocontrol.0.coolant-mist
+net coolant-flood     <=  iocontrol.0.coolant-flood
+
+#  ---probe signal---
+
+net probe-touch-in     =>  motion.probe-input
+
+#  ---motion control signals---
+
+net in-position               <=  motion.in-position
+net machine-is-enabled        <=  motion.motion-enabled
+
+#  ---estop signals---
+
+net estop-out     <=  iocontrol.0.user-enable-out
+net estop-out     =>  iocontrol.0.emc-enable-in
+
+#  --- tool change signals---
+net tool-prepare-loopback   iocontrol.0.tool-prepare     =>     iocontrol.0.tool-prepared
+

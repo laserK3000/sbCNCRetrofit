@@ -1,0 +1,194 @@
+o<toolchange> sub
+
+M73 (auto-restore modal settings on return)
+G17 G21 G40 G61 G80 G90 G94 G97 M9
+
+(check whether this code is run as preview. If so skip)
+o100 if [#<_task> EQ 0]
+	o<toolchange> return [1]
+o100 endif
+
+(check if spindle is initially indexed, otherwise indexing is unsafe)
+m66 P1 L0 Q1
+o169 if [#5399 NE 0]
+	(abort, spindle not indexed)
+	o<toolchange> return [0]
+o169 endif
+
+(orient spindle)
+m19 r0 q1
+
+g04 p0.1
+
+m66 P11 L0 Q1
+#1=#5399
+m66 P12 L0 Q1
+#2=#5399
+m66 P13 L0 Q1
+#3=#5399
+m66 P14 L0 Q1
+#4=#5399
+
+#<current_pocket>=[[#1*1]+[#2*2]+[#3*4]+[#4*8]]
+
+#<counter>=0
+
+#<pocket> = #<selected_pocket>
+
+
+
+o170 if [#<selected_tool> LT 11]
+	(abort, tool numbers must be larger than 10. Don't mix up tool numbers with pocket numbers, recheck the tool table.)
+	#<pocket>=#<current_pocket>
+	o<toolchange> return [0]
+o170 endif
+
+o180 if [#<current_pocket> EQ 0]
+	#<pocket>=#<current_pocket>
+	(abort, ATC: current ATC pocket number invalid)
+	o<toolchange> return [0]
+o180 endif
+
+o120 if [#<pocket> GT 0]
+	#<newpocket>=#<pocket>
+o120 else
+	(abort, ATC: pocket number not positive)
+	#<newpocket>=#<current_pocket>
+	o<toolchange> return [0]
+o120 endif
+
+o121 if [#<newpocket> EQ #<current_pocket>]
+	(print, ATC: Pocket already selected.)
+	o<toolchange> return [1]
+o121 endif
+
+#<movepos>=[#<newpocket>-#<current_pocket>]
+#<absmovepos>=ABS[#<movepos>]
+
+o111 if [#<absmovepos> GT 5]
+	#<shortmovepos>=[ABS[10-#<absmovepos>]]
+o111 endif
+
+#<finalmovepos>=#<absmovepos>
+
+o106 if [#<movepos> LT 0]
+	M64 p4
+	o119 if [#<absmovepos> GT 5]
+	M65 p4
+	#<finalmovepos>=#<shortmovepos>
+	o119 endif
+o106 else
+	M65 p4
+	o129 if [#<absmovepos> GT 5]
+	M64 p4
+	#<finalmovepos>=#<shortmovepos>
+	o129 endif
+o106 endif
+
+(if current tool is the optical probe, deactivate it before moving)
+o161 if [#<tool_in_spindle> EQ 99]
+	(print, switching off probe..)
+	m64 p2
+	g04 p0.3
+	m65 p2
+	g04 p2
+	(if probe was already off, this might have switched it back on)
+	m66 p19 l0 q1
+	#<probe_error>=#5399
+	o162 if [#<probe_error> EQ 0]
+		m64 p2
+		g04 p0.3
+		m65 p2
+		g04 p2
+	o162 endif
+	m66 p19 l0 q1
+	#<probe_error>=#5399
+	o163 if [#<probe_error> EQ 0]
+		(print, could not switch off probe, try manually by removing battery)
+	o163 endif
+o161 endif
+
+(unlock z-travel for ATC range)
+m64 p1
+
+(move to ATC home position)
+G53 G0 Z133
+
+(check whether at ATC home)
+m66 P16 L0 Q1
+#<atcready>=#5399
+o112 if [#<atcready> EQ 1]
+	o104 if [#<current_pocket> NE #<newpocket>]
+		m64 p3
+		
+		o101 while [#<counter> LT [#<finalmovepos>]]
+			m66 P10 L1 Q1
+			#<counter>=[#<counter>+1]
+		o101 endwhile
+		g4 p.1
+		m65 p3
+		m65 p4
+	o104 else
+		(abort, ATC: failed because already on that pocket)
+	o104 endif
+o112 else
+	(abort, ATC: not at ATC HOME abort)
+	o<toolchange> return [0]
+o112 endif
+
+(read current pocket number from encoders)
+m66 P11 L0 Q1
+#1=#5399
+m66 P12 L0 Q1
+#2=#5399
+m66 P13 L0 Q1
+#3=#5399
+m66 P14 L0 Q1
+#4=#5399
+#<current_pocket>=[[#1*1]+[#2*2]+[#3*4]+[#4*8]]
+
+(read dec pin to check alignment)
+m66 P10 L0 Q1
+#<notaligned>=#5399
+
+o150 if [#<notaligned> NE 1]
+	(abort, ATC: ATC not aligned or between stations.)
+	o<toolchange> return [0]
+o150 elseif [#<newpocket> NE #<current_pocket>]
+	(abort, ATC: ATC on the wrong pocket.)
+	return
+o150 else
+	#<tool_in_spindle>=#<selected_pocket>
+	G53 G0 Z0
+	(lock z-travel again)
+	m65 p1
+	(confirm tool change to iocontrol.0.tool-changed via hal wiring)
+	m64 p0
+	(if tool is the optical probe, activate it)
+	o151 if [#<selected_tool> EQ 99]
+		(print, switching on probe..)
+		m64 p2
+		g04 p0.3
+		m65 p2
+		g04 p2
+		(if probe was already on, this might have switched it back off)
+		m66 p19 l0 q1
+		#<probe_error>=#5399
+		o152 if [#<probe_error> EQ 1]
+			m64 p2
+			g04 p0.3
+			m65 p2
+			g04 p2
+		o152 endif
+		m66 p19 l0 q1
+		#<probe_error>=#5399
+		o153 if [#<probe_error> EQ 1]
+			(abort, could not switch on probe)
+		o153 endif
+	o151 endif
+	
+o150 endif
+
+o<toolchange> endsub [1]
+
+m2

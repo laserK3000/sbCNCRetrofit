@@ -1,0 +1,2 @@
+# switch z-axis soft limits, part 2
+net z-limit-out => ini.2.max_limit
