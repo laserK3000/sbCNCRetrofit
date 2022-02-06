@@ -1,0 +1,223 @@
+component bosch_ea;
+
+pin out bit reset;
+pin out bit clk;
+pin out bit outputdata# [8];
+pin in bit inputdata# [8];
+
+pin out bit x31-# [8];
+pin out bit x32-# [8];
+pin out bit x33-# [8];
+pin out bit x34-# [8];
+pin out bit x35-# [8];
+pin out bit x36-# [8];
+pin out bit x37-# [8];
+pin out bit x38-# [8];
+
+pin in bit x21-# [8];
+pin in bit x22-# [8];
+pin in bit x23-# [8];
+pin in bit x24-# [8];
+
+param r unsigned resetPeriod = 5;
+param r unsigned recoverPeriod = 5;
+param r unsigned clkLowPeriod = 5;
+param r unsigned samplePeriod = 5;
+
+variable long elapsed = 0;
+
+function _ nofp;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+typedef enum{
+	START,
+	RESLOW,
+	CLKLOW,
+	SAMPLE
+} state_t;
+
+static state_t state = START;
+
+FUNCTION (_)
+{	
+	elapsed++;
+
+	unsigned frame = 0;
+
+	switch (state){
+		case START:
+			reset = 1;
+			clk = 1;
+			frame = 0;
+			if(elapsed < recoverPeriod){
+				break;
+			}
+			elapsed = 0;
+			state = RESLOW;
+			break;
+		
+		case RESLOW:
+			clk = 0;
+			if(elapsed < resetPeriod){
+				break;
+			}
+			elapsed = 0;
+			state = CLKLOW;
+			break;
+
+		case CLKLOW:
+			clk = 0;
+			if(elapsed < clkLowPeriod){
+				break;
+			}
+			elapsed = 0;
+			state = SAMPLE;
+			break;
+
+		case SAMPLE:
+			clk = 1;
+			if(elapsed < samplePeriod){
+				break;
+			}
+			elapsed = 0;
+			state = CLKLOW;
+			switch(frame)
+			{
+				case 0:
+					x31(0) = inputdata(0);
+					x31(1) = inputdata(1);
+					x31(2) = inputdata(2);
+					x31(3) = inputdata(3);
+					x31(4) = inputdata(4);
+					x31(5) = inputdata(5);
+					x31(6) = inputdata(6);
+					x31(7) = inputdata(7);
+					outputdata(0) = x21(0);
+					outputdata(1) = x21(1);
+					outputdata(2) = x21(2);
+					outputdata(3) = x21(3);
+					outputdata(4) = x21(4);
+					outputdata(5) = x21(5);
+					outputdata(6) = x21(6);
+					outputdata(7) = x21(7);
+					frame++;
+					break;
+
+				case 1:
+					x32(0) = inputdata(0);
+					x32(1) = inputdata(1);
+					x32(2) = inputdata(2);
+					x32(3) = inputdata(3);
+					x32(4) = inputdata(4);
+					x32(5) = inputdata(5);
+					x32(6) = inputdata(6);
+					x32(7) = inputdata(7);
+					outputdata(0) = x22(0);
+					outputdata(1) = x22(1);
+					outputdata(2) = x22(2);
+					outputdata(3) = x22(3);
+					outputdata(4) = x22(4);
+					outputdata(5) = x22(5);
+					outputdata(6) = x22(6);
+					outputdata(7) = x22(7);
+					frame++;
+					break;
+
+				case 2:
+					x33(0) = inputdata(0);
+					x33(1) = inputdata(1);
+					x33(2) = inputdata(2);
+					x33(3) = inputdata(3);
+					x33(4) = inputdata(4);
+					x33(5) = inputdata(5);
+					x33(6) = inputdata(6);
+					x33(7) = inputdata(7);
+					outputdata(0) = x23(0);
+					outputdata(1) = x23(1);
+					outputdata(2) = x23(2);
+					outputdata(3) = x23(3);
+					outputdata(4) = x23(4);
+					outputdata(5) = x23(5);
+					outputdata(6) = x23(6);
+					outputdata(7) = x23(7);
+					frame++;
+					break;
+
+				case 3:
+					x34(0) = inputdata(0);
+					x34(1) = inputdata(1);
+					x34(2) = inputdata(2);
+					x34(3) = inputdata(3);
+					x34(4) = inputdata(4);
+					x34(5) = inputdata(5);
+					x34(6) = inputdata(6);
+					x34(7) = inputdata(7);
+					outputdata(0) = x24(0);
+					outputdata(1) = x24(1);
+					outputdata(2) = x24(2);
+					outputdata(3) = x24(3);
+					outputdata(4) = x24(4);
+					outputdata(5) = x24(5);
+					outputdata(6) = x24(6);
+					outputdata(7) = x24(7);
+					frame++;
+					break;
+
+				case 4:
+					x35(0) = inputdata(0);
+					x35(1) = inputdata(1);
+					x35(2) = inputdata(2);
+					x35(3) = inputdata(3);
+					x35(4) = inputdata(4);
+					x35(5) = inputdata(5);
+					x35(6) = inputdata(6);
+					x35(7) = inputdata(7);
+					frame++;
+					break;
+
+				case 5:
+					x36(0) = inputdata(0);
+					x36(1) = inputdata(1);
+					x36(2) = inputdata(2);
+					x36(3) = inputdata(3);
+					x36(4) = inputdata(4);
+					x36(5) = inputdata(5);
+					x36(6) = inputdata(6);
+					x36(7) = inputdata(7);
+					frame++;
+					break;
+
+				case 6:
+					x37(0) = inputdata(0);
+					x37(1) = inputdata(1);
+					x37(2) = inputdata(2);
+					x37(3) = inputdata(3);
+					x37(4) = inputdata(4);
+					x37(5) = inputdata(5);
+					x37(6) = inputdata(6);
+					x37(7) = inputdata(7);
+					frame++;
+					break;
+
+				case 7:
+					x38(0) = inputdata(0);
+					x38(1) = inputdata(1);
+					x38(2) = inputdata(2);
+					x38(3) = inputdata(3);
+					x38(4) = inputdata(4);
+					x38(5) = inputdata(5);
+					x38(6) = inputdata(6);
+					x38(7) = inputdata(7);
+					frame++;
+					break;
+
+				default:
+					frame = 0;
+					state = START;
+					// clk = 0;
+			}
+			// clk = 0;
+			break;
+	}
+}
