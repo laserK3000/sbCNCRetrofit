@@ -19,12 +19,13 @@ pin in bit x22-# [8];
 pin in bit x23-# [8];
 pin in bit x24-# [8];
 
-param r unsigned resetPeriod = 5;
-param r unsigned recoverPeriod = 5;
-param r unsigned clkLowPeriod = 5;
-param r unsigned samplePeriod = 5;
+param r unsigned resetPeriod = 20;
+param r unsigned recoverPeriod = 20;
+param r unsigned clkLowPeriod = 20;
+param r unsigned samplePeriod = 20;
 
-variable long elapsed = 0;
+variable unsigned elapsed = 0;
+variable unsigned frame = 0;
 
 function _ nofp;
 license "GPL"; // indicates GPL v2 or later
@@ -43,8 +44,6 @@ FUNCTION (_)
 {	
 	elapsed++;
 
-	unsigned frame = 0;
-
 	switch (state){
 		case START:
 			reset = 1;
@@ -59,6 +58,7 @@ FUNCTION (_)
 		
 		case RESLOW:
 			clk = 0;
+			reset = 0;
 			if(elapsed < resetPeriod){
 				break;
 			}
@@ -173,6 +173,14 @@ FUNCTION (_)
 					x35(5) = inputdata(5);
 					x35(6) = inputdata(6);
 					x35(7) = inputdata(7);
+					outputdata(0) = 0;
+					outputdata(1) = 0;
+					outputdata(2) = 0;
+					outputdata(3) = 0;
+					outputdata(4) = 0;
+					outputdata(5) = 0;
+					outputdata(6) = 0;
+					outputdata(7) = 0;
 					frame++;
 					break;
 
@@ -185,6 +193,14 @@ FUNCTION (_)
 					x36(5) = inputdata(5);
 					x36(6) = inputdata(6);
 					x36(7) = inputdata(7);
+					outputdata(0) = 0;
+					outputdata(1) = 0;
+					outputdata(2) = 0;
+					outputdata(3) = 0;
+					outputdata(4) = 0;
+					outputdata(5) = 0;
+					outputdata(6) = 0;
+					outputdata(7) = 0;
 					frame++;
 					break;
 
@@ -197,6 +213,14 @@ FUNCTION (_)
 					x37(5) = inputdata(5);
 					x37(6) = inputdata(6);
 					x37(7) = inputdata(7);
+					outputdata(0) = 0;
+					outputdata(1) = 0;
+					outputdata(2) = 0;
+					outputdata(3) = 0;
+					outputdata(4) = 0;
+					outputdata(5) = 0;
+					outputdata(6) = 0;
+					outputdata(7) = 0;
 					frame++;
 					break;
 
@@ -209,6 +233,14 @@ FUNCTION (_)
 					x38(5) = inputdata(5);
 					x38(6) = inputdata(6);
 					x38(7) = inputdata(7);
+					outputdata(0) = 0;
+					outputdata(1) = 0;
+					outputdata(2) = 0;
+					outputdata(3) = 0;
+					outputdata(4) = 0;
+					outputdata(5) = 0;
+					outputdata(6) = 0;
+					outputdata(7) = 0;
 					frame++;
 					break;
 
