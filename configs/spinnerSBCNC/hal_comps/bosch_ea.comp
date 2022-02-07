@@ -19,10 +19,8 @@ pin in bit x22-# [8];
 pin in bit x23-# [8];
 pin in bit x24-# [8];
 
-param r unsigned resetPeriod = 20;
-param r unsigned recoverPeriod = 20;
+param r unsigned clkHighPeriod = 20;
 param r unsigned clkLowPeriod = 20;
-param r unsigned samplePeriod = 20;
 
 variable unsigned elapsed = 0;
 variable unsigned frame = 0;
@@ -32,56 +30,31 @@ license "GPL"; // indicates GPL v2 or later
 ;;
 
 typedef enum{
-	START,
-	RESLOW,
-	CLKLOW,
-	SAMPLE
+	CLKHIGH,
+	CLKLOW
 } state_t;
 
-static state_t state = START;
+static state_t state = CLKHIGH;
 
 FUNCTION (_)
 {	
 	elapsed++;
 
 	switch (state){
-		case START:
-			reset = 1;
-			clk = 1;
-			frame = 0;
-			if(elapsed < recoverPeriod){
-				break;
+
+		case CLKHIGH:
+
+			if(!frame){
+				reset = 1;
+			}else{
+				clk = 1;
 			}
-			elapsed = 0;
-			state = RESLOW;
-			break;
-		
-		case RESLOW:
-			clk = 0;
-			reset = 0;
-			if(elapsed < resetPeriod){
+			if(elapsed < clkHighPeriod){
 				break;
 			}
 			elapsed = 0;
 			state = CLKLOW;
-			break;
-
-		case CLKLOW:
-			clk = 0;
-			if(elapsed < clkLowPeriod){
-				break;
-			}
-			elapsed = 0;
-			state = SAMPLE;
-			break;
-
-		case SAMPLE:
-			clk = 1;
-			if(elapsed < samplePeriod){
-				break;
-			}
-			elapsed = 0;
-			state = CLKLOW;
+			// READ/WRITE INPUT/OUTPUT
 			switch(frame)
 			{
 				case 0:
@@ -246,10 +219,18 @@ FUNCTION (_)
 
 				default:
 					frame = 0;
-					state = START;
-					// clk = 0;
 			}
-			// clk = 0;
+			break;
+
+		case CLKLOW:
+
+			clk = 0;
+			reset = 0;
+			if(elapsed < clkLowPeriod){
+				break;
+			}
+			elapsed = 0;
+			state = CLKHIGH;			
 			break;
 	}
 }
